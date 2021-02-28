@@ -1,5 +1,11 @@
 .App {
   text-align: center;
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .App-logo {
@@ -8,17 +14,37 @@
 }
 
 .main {
-	width:90%
+	position:relative;
+	width:90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.inputs {
+	position:relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+	padding:10px;
+}
+
+input {
+	text-align:center;
 }
 
 img {
-	max-width:400px;
+	max-width:600px;
 	width:90vw;
+	margin:12px;
 }
 
 .App-header {
+  max-width:600px;
   background-color: #282c34;
-  min-height: 100vh;
+  min-height: 80vh;
   display: flex;
   flex-direction: column;
   align-items: center;

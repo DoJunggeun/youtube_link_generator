@@ -2,114 +2,164 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
-    const [loaded, setLoaded] = useState(false);
-    function autoPasteVaildURL() {
-		alert('hi')
-	// if (window.confirm('클립보드의 텍스트를 붙여넣을래?')) 
-        let t = document.createElement('textarea');
-		t.focus();
-		document.execCommand('paste');
-		console.log(t)
-		console.log(t.textContent)
-	// }
-    }
+    // const [loaded, setLoaded] = useState(false);
+    // function autoPasteVaildURL() {
+    //     alert('hi');
+    //     // if (window.confirm('클립보드의 텍스트를 붙여넣을래?'))
+    //     let t = document.createElement('textarea');
+    //     t.focus();
+    //     document.execCommand('paste');
+    //     console.log(t);
+    //     console.log(t.textContent);
+    //     // }
+    // }
 
-    useEffect(() => {
-        document.addEventListener("click", autoPasteVaildURL, {once:true})
-    }, []);
+    // useEffect(() => {
+    //     document.addEventListener('click', autoPasteVaildURL, { once: true });
+    // }, []);
 
-    function copyToClipboard() {
-        if (isYoutubeURL() === false) {
-            alert('your URL is not a YouTube video');
+    function onSubmit() {
+        let data;
+        let inputURL = document.getElementById('originallink').value;
+        let min = document.getElementById('min');
+        let sec = document.getElementById('sec');
+
+        if (isEmpty(inputURL)) {
+            alert('enter your URL');
+            return;
         } else {
-            let url = isYoutubeURL().url;
-            let min = document.getElementById('min').value;
-            let sec = document.getElementById('sec').value;
-            let result = url + '?t=' + (60 * min + 1 * sec);
-            let t = document.createElement('textarea');
-            document.body.appendChild(t);
-            t.value = result;
-            t.select();
-            document.execCommand('copy');
-            document.getElementById('result').value = result;
-            document.body.removeChild(t);
-            document.getElementById('thumbnail').src =
-                'https://i.ytimg.com/vi/' + getThumbnailCode() + '/maxresdefault.jpg';
+            data = isYoutubeURL(inputURL);
+            if (data === false) {
+                alert('check your URL.\nyour URL may not a YouTube video');
+                return;
+            }
         }
+        if (!isNumber(min.value)) {
+            alert(min.value + ' is not a integer'); return;
+        } else if (!isNumber(sec.value)) {
+            alert(sec.value + ' is not a integer'); return;
+        } else if (sec.value >= 60) {
+            alert('sec must be smaller than 60'); return;
+        }
+        if (isEmpty(min.value)) min.value = 0;
+        if (isEmpty(sec.value)) sec.value = 0;
+        copyToClipboard(data, min.value, sec.value);
     }
-    // https://i.ytimg.com/vi/M03hNLFsRKY/maxresdefault.jpg
+
+    function copyToClipboard(data, min, sec) {
+		let videoCode = getVideoCode(data);
+        let result = 'https://youtu.be/'+videoCode+'?t=' + (60 * min + 1 * sec);
+		// https://youtu.be/cxNIewNXpcg?list=RDcxNIewNXpcg
+        if (min == 0 && sec == 0) {
+            result = 'https://youtu.be/'+videoCode;
+        } else {
+            result = 'https://youtu.be/'+videoCode+'?t=' + (60 * min + 1 * sec);
+        }
+        let t = document.createElement('textarea');
+        document.body.appendChild(t);
+        t.value = result;
+        t.select();
+        document.execCommand('copy');
+        document.getElementById('result').value = result;
+        document.body.removeChild(t);
+        let thumbnailURL = 'https://i.ytimg.com/vi/' + videoCode + '/maxresdefault.jpg';
+        document.getElementById('thumbnail').src = thumbnailURL;
+		setTimeout(() => alert('URL copied!'),300)
+    }
+    // https://i.ytimg.com/vi/M03hNLFsRKY/maxresdefault.jpg (maxresdefault, sddefault, 0)
     // https://www.youtube.com/watch?v=8Wtvn2LBQHM&feature=youtu.be
     // https://youtu.be/8Wtvn2LBQHM
 
-    function getThumbnailCode() {
-        if (isYoutubeURL() === false) return null;
-        let url = isYoutubeURL().url;
-        let urltype = isYoutubeURL().urltype;
-        let protocol = isYoutubeURL().protocol;
+    function getVideoCode(data) {
+        let _url = data.url;
+        let urltype = data.urltype;
         if (urltype === 'shortURL') {
-            if (protocol === 'https') return url.slice(17);
-            else if (protocol === 'http') return url.slice(16);
-            else if (protocol === null) return url.slice(9);
+            return _url.slice(9);
         }
         if (urltype === 'fullURL') {
-            let start = url.indexOf('v=') + 2;
-            let end = url.indexOf('&');
-
-            return url.slice(start, start + 11);
+            let start = _url.indexOf('v=') + 2;
+            let end = start + 11;
+            return _url.slice(start, end);
         }
     }
 
-    function isYoutubeURL() {
-        let originallink = document.getElementById('originallink').value;
-        if (originallink.includes('?t=')) {
-            originallink = originallink.slice(0, originallink.indexOf('?t='));
+    function isYoutubeURL(inputURL) {
+		let listcode = null;
+        if (inputURL.includes('?t=')) {
+            inputURL = inputURL.slice(0, inputURL.indexOf('?t='));
         }
-        if (originallink.slice(8, 16) === 'youtu.be') {
-            return { protocol: 'https', urltype: 'shortURL', url: originallink };
-        } else if (originallink.slice(7, 15) === 'youtu.be') {
-            return { protocol: 'http', urltype: 'shortURL', url: originallink };
-        } else if (originallink.slice(0, 8) === 'youtu.be') {
-            return { protocol: null, urltype: 'shortURL', url: originallink };
-        } else if (originallink.slice(0, 15) === 'www.youtube.com') {
-            return { protocol: null, urltype: 'fullURL', url: originallink };
-        } else if (originallink.slice(7, 22) === 'www.youtube.com') {
-            return { protocol: 'http', urltype: 'fullURL', url: originallink };
-        } else if (originallink.slice(8, 23) === 'www.youtube.com') {
-            return { protocol: 'https', urltype: 'fullURL', url: originallink };
+        if (inputURL.includes('?list=')) {
+			let start = inputURL.indexOf('?list=')+6
+            listcode = inputURL.slice(start,start+13);
+        }
+        if (inputURL.slice(8, 16) === 'youtu.be') {
+            return { protocol: 'https', urltype: 'shortURL', url: inputURL.slice(8), listcode };
+        } else if (inputURL.slice(7, 15) === 'youtu.be') {
+            return { protocol: 'http', urltype: 'shortURL', url: inputURL.slice(7), listcode };
+        } else if (inputURL.slice(0, 8) === 'youtu.be') {
+            return { protocol: null, urltype: 'shortURL', url: inputURL, listcode };
+        } else if (inputURL.slice(0, 15) === 'www.youtube.com') {
+            return { protocol: null, urltype: 'fullURL', url: inputURL.slice(4), listcode };
+        } else if (inputURL.slice(7, 22) === 'www.youtube.com') {
+            return { protocol: 'http', urltype: 'fullURL', url: inputURL.slice(11), listcode };
+        } else if (inputURL.slice(8, 23) === 'www.youtube.com') {
+            return { protocol: 'https', urltype: 'fullURL', url: inputURL.slice(12), listcode };
+        } else if (inputURL.slice(0, 11) === 'youtube.com') {
+            return { urltype: 'fullURL', url: inputURL };
         } else return false;
     }
+
+    function isNumber(val) {
+        if (val == parseInt(val)) return true;
+        else return false;
+    }
+
+    function isEmpty(val) {
+        if (val == null || val == '' || val == undefined) return true;
+        else return false;
+    }
+	
+	function share(){
+        let t = document.createElement('textarea');
+        document.body.appendChild(t);
+        t.value = window.location;
+        t.select();
+        document.execCommand('copy');
+        document.body.removeChild(t);
+		setTimeout(() => alert('URL copied!'),300)
+	}
 
     return (
         <div className="App">
             <header className="App-header">
                 <h1>Youtube specific time URL Generator</h1>
                 <div className="main">
-                    <input id="originallink" type="text" size="30" placeholder="link" required />
-                    <br />
+                    <input id="originallink" type="text" size="30" placeholder="link" />
+					<div className="inputs">
                     <input
                         id="min"
                         type="text"
                         minLength="1"
                         maxLength="4"
-                        size="14"
+                        size="3"
                         placeholder="min"
-                        required
                     />
                     <input
                         id="sec"
                         type="text"
                         minLength="1"
                         maxLength="2"
-                        size="14"
+                        size="3"
                         placeholder="sec"
-                        required
                     />
+						<button onClick={() => onSubmit()}>submit</button>
+					</div>
+                
+                <input id="result" type="text" size="45" placeholder="result" readOnly/>
+                <img id="thumbnail" alt=""></img>
                 </div>
-                <br />
-                <button onClick={() => copyToClipboard()}>submit</button>
-                <input id="result" type="text" size="30" placeholder="result" />
-                <img id="thumbnail"></img>
             </header>
+			<button onClick={() => share()}>share this page</button>
         </div>
     );
 }
