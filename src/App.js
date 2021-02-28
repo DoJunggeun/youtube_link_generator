@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import key from './api/youtubeapi.js'
 
 function App() {
     // const [loaded, setLoaded] = useState(false);
@@ -34,19 +35,22 @@ function App() {
                 return;
             }
         }
-        if (!isNumber(min.value)) {
+        if (!isNumber(min.value) && !isEmpty(min.value)) {
             alert(min.value + ' is not a integer'); return;
-        } else if (!isNumber(sec.value)) {
+        } else if (!isNumber(sec.value) && !isEmpty(sec.value)) {
             alert(sec.value + ' is not a integer'); return;
         } else if (sec.value >= 60) {
             alert('sec must be smaller than 60'); return;
         }
         if (isEmpty(min.value)) min.value = 0;
         if (isEmpty(sec.value)) sec.value = 0;
-        copyToClipboard(data, min.value, sec.value);
+		let videoCode = getVideoCode(data);
+		let resultURL = makeResult(data, min.value, sec.value);
+        copyToClipboard(resultURL);
+		showResult(resultURL, videoCode);
     }
-
-    function copyToClipboard(data, min, sec) {
+	
+	function makeResult(data, min, sec) {
 		let videoCode = getVideoCode(data);
         let result = 'https://youtu.be/'+videoCode+'?t=' + (60 * min + 1 * sec);
 		// https://youtu.be/cxNIewNXpcg?list=RDcxNIewNXpcg
@@ -55,17 +59,35 @@ function App() {
         } else {
             result = 'https://youtu.be/'+videoCode+'?t=' + (60 * min + 1 * sec);
         }
+		return result;
+	}
+
+    function copyToClipboard(textdata) {
         let t = document.createElement('textarea');
         document.body.appendChild(t);
-        t.value = result;
+        t.value = textdata;
         t.select();
         document.execCommand('copy');
-        document.getElementById('result').value = result;
         document.body.removeChild(t);
+    }
+	
+	function copyResultToClipboard() {
+		let result = document.querySelector('#result').value;
+		if (result) {
+			copyToClipboard(result);
+			setTimeout(() => alert('URL copied!'),300)
+		}
+	}
+		
+	function showResult(resultURL, videoCode){
+		// fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet&id='+videoCode+'&key='+key)
+		// 	.then( (res) => { alert(res); res.json(); console.log(res);})
+		// 	.then( (json) => console.log(JSON.stringify(json)) )
+        document.getElementById('result').value = resultURL;
         let thumbnailURL = 'https://i.ytimg.com/vi/' + videoCode + '/maxresdefault.jpg';
         document.getElementById('thumbnail').src = thumbnailURL;
 		setTimeout(() => alert('URL copied!'),300)
-    }
+	}
     // https://i.ytimg.com/vi/M03hNLFsRKY/maxresdefault.jpg (maxresdefault, sddefault, 0)
     // https://www.youtube.com/watch?v=8Wtvn2LBQHM&feature=youtu.be
     // https://youtu.be/8Wtvn2LBQHM
@@ -132,34 +154,33 @@ function App() {
     return (
         <div className="App">
             <header className="App-header">
-                <h1>Youtube specific time URL Generator</h1>
+                <h1 id="title">Youtube specific time URL Generator</h1>
                 <div className="main">
-                    <input id="originallink" type="text" size="30" placeholder="link" />
-					<div className="inputs">
+                    <input id="originallink" type="text" className='width100' placeholder="original URL" />
+					<div className="inputs width100">
                     <input
                         id="min"
                         type="text"
                         minLength="1"
                         maxLength="4"
-                        size="3"
+                        size="6"
                         placeholder="min"
-                    />
+                    />&nbsp;&nbsp;:&nbsp;&nbsp;
                     <input
                         id="sec"
                         type="text"
                         minLength="1"
                         maxLength="2"
-                        size="3"
+                        size="6"
                         placeholder="sec"
                     />
-						<button onClick={() => onSubmit()}>submit</button>
+						<button id="submit" onClick={() => onSubmit()}>submit</button>
 					</div>
-                
-                <input id="result" type="text" size="45" placeholder="result" readOnly/>
-                <img id="thumbnail" alt=""></img>
+                	<input id="result" type="text" placeholder="result" readOnly style={{width:'100%'}} onClick={() => copyResultToClipboard()}/>
                 </div>
             </header>
-			<button onClick={() => share()}>share this page</button>
+			<img id="thumbnail" alt=""></img>
+			<button id="share" onClick={() => share()}>share this page</button>
         </div>
     );
 }

@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* justify-content: center; */
 }
 
 .App-logo {
@@ -28,11 +28,27 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-	padding:10px;
+  margin: 18px 0px 18px 0px;
+}
+
+#title {
+	margin-bottom:20px
+}
+
+#submit {
+	position:absolute;
+	right:0;
+	height:1.4rem;
+}
+
+#share {
+	height:1.4rem;
 }
 
 input {
 	text-align:center;
+	height:1.4rem;
+	font-size:1rem;
 }
 
 img {
@@ -41,16 +57,21 @@ img {
 	margin:12px;
 }
 
+.width100 {
+	width:100%;
+}
+
 .App-header {
+	top:0px;
   max-width:600px;
   background-color: #282c34;
-  min-height: 80vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  font-size: calc(10px + 1vmin);
   color: white;
+  margin-top:5vh;
 }
 
 .App-link {
