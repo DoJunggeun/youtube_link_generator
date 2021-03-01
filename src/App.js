@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import {fadeOut, fadeOutAction, changeOpacity} from './fadeout.js'
 
 function App() {
+	const [validInput, setValidInput] = useState('')
     // const [loaded, setLoaded] = useState(false);
     // function autoPasteVaildURL() {
     //     alert('hi');
@@ -17,24 +19,48 @@ function App() {
     // useEffect(() => {
     //     document.addEventListener('click', autoPasteVaildURL, { once: true });
     // }, []);
+	const alertDelay = 300;
+	
+	function showCheckTooltip(isURLValid){
+		if (isURLValid) {
+			document.getElementById('tooltipcontent').innerText = 'Great!';
+			document.querySelector('.p-tooltip-content').style.backgroundColor = '#48E452'
+			document.querySelector('.p-tooltip-arrow').style.borderTopColor = '#48E452'
+			setTimeout(() => {
+				let inputTooltips = document.querySelectorAll('.input-tooltip');
+				inputTooltips.forEach((item) => fadeOut(item));
+			},800)
+		} else {
+			document.getElementById('tooltipcontent').innerText = 'Check your URL';
+			document.querySelector('.p-tooltip-content').style.backgroundColor = '#cc413e'
+			document.querySelector('.p-tooltip-arrow').style.borderTopColor = '#cc413e'
+		}
 
+        let inputTooltips = document.querySelectorAll('.input-tooltip');
+		inputTooltips.forEach((item) => (item.style.opacity = 1));
+	}
+	
+	function hideCheckTooltip() {
+        let inputTooltips = document.querySelectorAll('.input-tooltip');
+		inputTooltips.forEach((item) => (item.style.opacity = 0))
+	}
+	
     function onInputURLChange() {
         let inputURL = document.getElementById('originallink').value;
-        let inputTooltips = document.querySelectorAll('.input-tooltip');
         // inputURL이 유튜브 링크 맞으면 썸네일 가져오기
 		// 
         if (inputURL == '') {
 			hideThumbnail();
 			hideInfo();
-            inputTooltips.forEach((item) => (item.style.opacity = 0));
+            hideCheckTooltip();
         } else {
             let data = isYoutubeURL(inputURL);
             if (data) {
-                inputTooltips.forEach((item) => (item.style.opacity = 0));
+                showCheckTooltip(true);
                 let videoCode = getVideoCode(data.url, data.urltype);
 				showData(videoCode);
             } else if (!data) {
-                inputTooltips.forEach((item) => (item.style.opacity = 1));
+                showCheckTooltip(false);
             }
         }
     }
@@ -109,13 +135,13 @@ function App() {
         let result = document.querySelector('#result').value;
         if (result) {
             copyToClipboard(result);
-            setTimeout(() => alert('URL copied!'), 300);
+            setTimeout(() => alert('URL copied!'), alertDelay);
         }
     }
 
     function showResult(resultURL, videoCode) {
         document.getElementById('result').value = resultURL;
-        setTimeout(() => alert('URL copied!'), 300);
+        setTimeout(() => alert('URL copied!'), alertDelay);
     }
 
     function showData(videoCode) {
@@ -124,10 +150,12 @@ function App() {
         	.then( (json) => {
 				  let info = JSON.parse(JSON.stringify(json)).items[0] // description, channelId, localized.title, localized.description, tags, thumbnails, etc
 				  if (info == undefined) {
+					  setValidInput('');
 					  document.querySelectorAll('.input-tooltip').forEach((item) => (item.style.opacity = 1));
 					  return
 				  } else {
 					  info = info.snippet
+					  setValidInput(document.getElementById('originallink').value);
 				  }
 				  let title = info.title;
 				  let channel = info.channelTitle;
@@ -155,10 +183,13 @@ function App() {
     function showThumbnail(thumbnailURL) {
 		let image = document.getElementById('thumbnail');
         image.src = thumbnailURL;
+		image.style.display = '';
     }
 	
 	function hideThumbnail() {
-		document.getElementById('thumbnail').src = '';
+		let image = document.getElementById('thumbnail');
+		image.src = '';
+		image.style.display = 'none';
 	}
     // https://i.ytimg.com/vi/M03hNLFsRKY/maxresdefault.jpg (maxresdefault, sddefault, 0)
     // https://www.youtube.com/watch?v=8Wtvn2LBQHM&feature=youtu.be
@@ -234,12 +265,11 @@ function App() {
 	
 	function openVideo() {
 		let result = document.getElementById('result').value
-		let input = document.getElementById('originallink').value
 		if ( result ) {
 			window.open(result);
-		} else {
-			window.open(input);
-		}
+		} else if (validInput) {
+			window.open(validInput);
+		} else return;
 	}
 
     function isNumber(val) {
@@ -251,6 +281,16 @@ function App() {
         if (val == null || val == '' || val == undefined) return true;
         else return false;
     }
+	
+	function showClearButton() {
+		if (document.getElementById('originallink').value == '') {
+			
+		}
+	}
+	function clearInput() {
+		hideCheckTooltip();
+        document.getElementById('originallink').value = '';
+	}
 
     function share() {
         let t = document.createElement('textarea');
@@ -259,7 +299,7 @@ function App() {
         t.select();
         document.execCommand('copy');
         document.body.removeChild(t);
-        setTimeout(() => alert('URL copied!\nThanks for sharing'), 300);
+        setTimeout(() => alert('URL copied!\nThanks for sharing'), alertDelay);
     }
 
     return (
@@ -267,6 +307,9 @@ function App() {
             <header className="App-header">
                 <h1 id="title">Youtube specific time URL Generator</h1>
                 <div className="main">
+					<div className="inputs width100">
+						<button id="clear" onClick={()=>clearInput()}>clear</button>
+					</div>
                     <input
                         id="originallink"
                         type="text"
@@ -275,7 +318,7 @@ function App() {
                         onChange={() => onInputURLChange()}
                     />
                     <div className="p-tooltip input-tooltip">
-                        <div className="p-tooltip-content input-tooltip">check your URL</div>
+                        <div id="tooltipcontent" className="p-tooltip-content input-tooltip">Check your URL</div>
                         <div className="p-tooltip-arrow input-tooltip" />
                     </div>
 
