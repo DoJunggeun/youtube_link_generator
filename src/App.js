@@ -22,6 +22,7 @@ function App() {
         let inputURL = document.getElementById('originallink').value;
         let inputTooltips = document.querySelectorAll('.input-tooltip');
         // inputURL이 유튜브 링크 맞으면 썸네일 가져오기
+		// 
         if (inputURL == '') {
 			hideThumbnail();
 			hideInfo();
@@ -68,7 +69,7 @@ function App() {
             return;
         } else {
             data = isYoutubeURL(inputURL);
-            if (data === false) {
+            if (data === false || document.querySelector('.input-tooltip').style.opacity == 1) { // 정리 필요
                 alert('Check your URL\nYour URL might be wrong');
                 return;
             }
@@ -123,7 +124,7 @@ function App() {
         	.then( (json) => {
 				  let info = JSON.parse(JSON.stringify(json)).items[0] // description, channelId, localized.title, localized.description, tags, thumbnails, etc
 				  if (info == undefined) {
-					  document.querySelector('#videoInfo').innerText = 'Check your URL'
+					  document.querySelectorAll('.input-tooltip').forEach((item) => (item.style.opacity = 1));
 					  return
 				  } else {
 					  info = info.snippet
