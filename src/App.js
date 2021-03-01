@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import key from './api/youtubeapi.js'
+import key from './api/youtubeapi.js';
 
 function App() {
     // const [loaded, setLoaded] = useState(false);
@@ -19,6 +19,43 @@ function App() {
     //     document.addEventListener('click', autoPasteVaildURL, { once: true });
     // }, []);
 
+    function onInputURLChange() {
+        let inputURL = document.getElementById('originallink').value;
+        let inputTooltips = document.querySelectorAll('.input-tooltip');
+        // inputURL이 유튜브 링크 맞으면 썸네일 가져오기
+        if (inputURL == '') {
+            inputTooltips.forEach((item) => (item.style.opacity = 0));
+        } else {
+            let data = isYoutubeURL(inputURL);
+            if (data) {
+                inputTooltips.forEach((item) => (item.style.opacity = 0));
+                let videoCode = getVideoCode(data.url, data.urltype);
+                showThumbnail(videoCode);
+            } else if (!data) {
+                inputTooltips.forEach((item) => (item.style.opacity = 1));
+            }
+        }
+    }
+
+    function onTimeChange() {
+        // validate min & sec
+        let min = document.getElementById('min');
+        let sec = document.getElementById('sec');
+        if (!isNumber(min.value) && !isEmpty(min.value)) {
+            alert(min.value + ' is not a integer');
+            min.value = '';
+            return;
+        } else if (!isNumber(sec.value) && !isEmpty(sec.value)) {
+            alert(sec.value + ' is not a integer');
+            sec.value = '';
+            return;
+        } else if (sec.value >= 60) {
+            alert('sec must be smaller than 60');
+            sec.value = sec.value.slice(0, 1);
+            return;
+        }
+    }
+
     function onSubmit() {
         let data;
         let inputURL = document.getElementById('originallink').value;
@@ -26,41 +63,37 @@ function App() {
         let sec = document.getElementById('sec');
 
         if (isEmpty(inputURL)) {
-            alert('enter your URL');
+            alert('Enter your URL');
             return;
         } else {
             data = isYoutubeURL(inputURL);
             if (data === false) {
-                alert('check your URL.\nyour URL may not a YouTube video');
+                alert('Check your URL\nYour URL might be wrong');
                 return;
             }
         }
-        if (!isNumber(min.value) && !isEmpty(min.value)) {
-            alert(min.value + ' is not a integer'); return;
-        } else if (!isNumber(sec.value) && !isEmpty(sec.value)) {
-            alert(sec.value + ' is not a integer'); return;
-        } else if (sec.value >= 60) {
-            alert('sec must be smaller than 60'); return;
-        }
         if (isEmpty(min.value)) min.value = 0;
         if (isEmpty(sec.value)) sec.value = 0;
-		let videoCode = getVideoCode(data);
-		let resultURL = makeResult(data, min.value, sec.value);
+        let videoCode = getVideoCode(data.url, data.urltype);
+        let resultURL = makeResult(data, min.value, sec.value);
         copyToClipboard(resultURL);
-		showResult(resultURL, videoCode);
+        showResult(resultURL, videoCode);
+		showData(videoCode);
+		let submitTooltips = document.querySelectorAll('.submit-tooltip');
+		submitTooltips.forEach((item) => (item.style.opacity = 1));
     }
-	
-	function makeResult(data, min, sec) {
-		let videoCode = getVideoCode(data);
-        let result = 'https://youtu.be/'+videoCode+'?t=' + (60 * min + 1 * sec);
-		// https://youtu.be/cxNIewNXpcg?list=RDcxNIewNXpcg
+
+    function makeResult(data, min, sec) {
+        let videoCode = getVideoCode(data.url, data.urltype);
+        let result = 'https://youtu.be/' + videoCode + '?t=' + (60 * min + 1 * sec);
+        // https://youtu.be/cxNIewNXpcg?list=RDcxNIewNXpcg
         if (min == 0 && sec == 0) {
-            result = 'https://youtu.be/'+videoCode;
+            result = 'https://youtu.be/' + videoCode;
         } else {
-            result = 'https://youtu.be/'+videoCode+'?t=' + (60 * min + 1 * sec);
+            result = 'https://youtu.be/' + videoCode + '?t=' + (60 * min + 1 * sec);
         }
-		return result;
-	}
+        return result;
+    }
 
     function copyToClipboard(textdata) {
         let t = document.createElement('textarea');
@@ -70,35 +103,49 @@ function App() {
         document.execCommand('copy');
         document.body.removeChild(t);
     }
-	
-	function copyResultToClipboard() {
-		let result = document.querySelector('#result').value;
-		if (result) {
-			copyToClipboard(result);
-			setTimeout(() => alert('URL copied!'),300)
-		}
-	}
-		
-	function showResult(resultURL, videoCode){
-		// fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet&id='+videoCode+'&key='+key)
-		// 	.then( (res) => { alert(res); res.json(); console.log(res);})
-		// 	.then( (json) => console.log(JSON.stringify(json)) )
+
+    function copyResultToClipboard() {
+        let result = document.querySelector('#result').value;
+        if (result) {
+            copyToClipboard(result);
+            setTimeout(() => alert('URL copied!'), 300);
+        }
+    }
+
+    function showResult(resultURL, videoCode) {
         document.getElementById('result').value = resultURL;
+        setTimeout(() => alert('URL copied!'), 300);
+    }
+
+    function showData(videoCode) {
+        fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet&id='+videoCode+'&key='+key)
+        	.then( (res) => res.json() )
+        	.then( (json) => console.log(JSON.stringify(json)) )
+    }
+	
+	
+	
+    function showThumbnail(videoCode) {
+        let image = document.getElementById('thumbnail');
         let thumbnailURL = 'https://i.ytimg.com/vi/' + videoCode + '/maxresdefault.jpg';
-        document.getElementById('thumbnail').src = thumbnailURL;
-		setTimeout(() => alert('URL copied!'),300)
-	}
+        image.src = thumbnailURL;
+        if (image.naturalHeight == 90)
+            image.src = 'https://i.ytimg.com/vi/' + videoCode + '/hddefault.jpg';
+        if (image.naturalHeight == 90)
+            image.src = 'https://i.ytimg.com/vi/' + videoCode + '/sddefault.jpg';
+        if (image.naturalHeight == 90) image.src = 'https://i.ytimg.com/vi/' + videoCode + '/0.jpg';
+    }
     // https://i.ytimg.com/vi/M03hNLFsRKY/maxresdefault.jpg (maxresdefault, sddefault, 0)
     // https://www.youtube.com/watch?v=8Wtvn2LBQHM&feature=youtu.be
     // https://youtu.be/8Wtvn2LBQHM
 
-    function getVideoCode(data) {
-        let _url = data.url;
-        let urltype = data.urltype;
-        if (urltype === 'shortURL') {
+    function getVideoCode(url, urltype) {
+        let _url = url;
+        let _urltype = urltype;
+        if (_urltype === 'shortURL') {
             return _url.slice(9);
         }
-        if (urltype === 'fullURL') {
+        if (_urltype === 'fullURL') {
             let start = _url.indexOf('v=') + 2;
             let end = start + 11;
             return _url.slice(start, end);
@@ -106,30 +153,67 @@ function App() {
     }
 
     function isYoutubeURL(inputURL) {
-		let listcode = null;
+        let listcode = null;
         if (inputURL.includes('?t=')) {
+            // t 있는지 check
             inputURL = inputURL.slice(0, inputURL.indexOf('?t='));
         }
         if (inputURL.includes('?list=')) {
-			let start = inputURL.indexOf('?list=')+6
-            listcode = inputURL.slice(start,start+13);
+            // list 있는지 체크
+            let start = inputURL.indexOf('?list=') + 6;
+            listcode = inputURL.slice(start, start + 13);
         }
-        if (inputURL.slice(8, 16) === 'youtu.be') {
-            return { protocol: 'https', urltype: 'shortURL', url: inputURL.slice(8), listcode };
-        } else if (inputURL.slice(7, 15) === 'youtu.be') {
-            return { protocol: 'http', urltype: 'shortURL', url: inputURL.slice(7), listcode };
-        } else if (inputURL.slice(0, 8) === 'youtu.be') {
-            return { protocol: null, urltype: 'shortURL', url: inputURL, listcode };
-        } else if (inputURL.slice(0, 15) === 'www.youtube.com') {
-            return { protocol: null, urltype: 'fullURL', url: inputURL.slice(4), listcode };
-        } else if (inputURL.slice(7, 22) === 'www.youtube.com') {
-            return { protocol: 'http', urltype: 'fullURL', url: inputURL.slice(11), listcode };
-        } else if (inputURL.slice(8, 23) === 'www.youtube.com') {
-            return { protocol: 'https', urltype: 'fullURL', url: inputURL.slice(12), listcode };
-        } else if (inputURL.slice(0, 11) === 'youtube.com') {
-            return { urltype: 'fullURL', url: inputURL };
+        if (inputURL.includes('youtu.be')) {
+            let videoCodeStart = inputURL.indexOf('youtu.be') + 9; // youtu.be/(videoCode)
+            let videoCodeEnd = videoCodeStart + 11;
+            if (inputURL.slice(videoCodeStart, videoCodeEnd).length < 11) {
+                return false;
+            }
+            if (inputURL.slice(8, 16) === 'youtu.be') {
+                // https
+                return { urltype: 'shortURL', url: inputURL.slice(8), listcode };
+            }
+            if (inputURL.slice(7, 15) === 'youtu.be') {
+                // http
+                return { urltype: 'shortURL', url: inputURL.slice(7), listcode };
+            }
+            if (inputURL.slice(0, 8) === 'youtu.be') {
+                return { urltype: 'shortURL', url: inputURL, listcode };
+            }
+        }
+        if (inputURL.includes('youtube.com')) {
+            let videoCodeStart = inputURL.indexOf('?v=') + 3;
+            let videoCodeEnd = videoCodeStart + 11;
+            if (inputURL.slice(videoCodeStart, videoCodeEnd).length < 11) {
+                return false;
+            }
+            if (inputURL.slice(0, 11) === 'youtube.com') {
+                // www 생략
+                return { urltype: 'fullURL', url: inputURL, listcode };
+            }
+            if (inputURL.slice(4, 15) === 'youtube.com') {
+                return { urltype: 'fullURL', url: inputURL.slice(4), listcode };
+            }
+            if (inputURL.slice(11, 22) === 'youtube.com') {
+                // http
+                return { urltype: 'fullURL', url: inputURL.slice(11), listcode };
+            }
+            if (inputURL.slice(12, 23) === 'youtube.com') {
+                // https
+                return { urltype: 'fullURL', url: inputURL.slice(12), listcode };
+            }
         } else return false;
     }
+	
+	function openVideo() {
+		let result = document.getElementById('result').value
+		let input = document.getElementById('originallink').value
+		if ( result ) {
+			window.open(result);
+		} else {
+			window.open(input);
+		}
+	}
 
     function isNumber(val) {
         if (val == parseInt(val)) return true;
@@ -140,47 +224,72 @@ function App() {
         if (val == null || val == '' || val == undefined) return true;
         else return false;
     }
-	
-	function share(){
+
+    function share() {
         let t = document.createElement('textarea');
         document.body.appendChild(t);
         t.value = window.location;
         t.select();
         document.execCommand('copy');
         document.body.removeChild(t);
-		setTimeout(() => alert('URL copied!'),300)
-	}
+        setTimeout(() => alert('URL copied!\nThanks for sharing'), 300);
+    }
 
     return (
         <div className="App">
             <header className="App-header">
                 <h1 id="title">Youtube specific time URL Generator</h1>
                 <div className="main">
-                    <input id="originallink" type="text" className='width100' placeholder="original URL" />
-					<div className="inputs width100">
                     <input
-                        id="min"
+                        id="originallink"
                         type="text"
-                        minLength="1"
-                        maxLength="4"
-                        size="6"
-                        placeholder="min"
-                    />&nbsp;&nbsp;:&nbsp;&nbsp;
-                    <input
-                        id="sec"
-                        type="text"
-                        minLength="1"
-                        maxLength="2"
-                        size="6"
-                        placeholder="sec"
+                        className="width100"
+                        placeholder="original URL"
+                        onChange={() => onInputURLChange()}
                     />
-						<button id="submit" onClick={() => onSubmit()}>submit</button>
-					</div>
-                	<input id="result" type="text" placeholder="result" readOnly style={{width:'100%'}} onClick={() => copyResultToClipboard()}/>
+                    <div className="p-tooltip input-tooltip">
+                        <div className="p-tooltip-content input-tooltip">check your URL</div>
+                        <div className="p-tooltip-arrow input-tooltip" />
+                    </div>
+
+                    <div className="inputs width100">
+                        <input
+                            id="min"
+                            type="text"
+                            minLength="1"
+                            maxLength="4"
+                            size="6"
+                            placeholder="min"
+                            onChange={() => onTimeChange()}
+                        />
+                        &nbsp;&nbsp;:&nbsp;&nbsp;
+                        <input
+                            id="sec"
+                            type="text"
+                            minLength="1"
+                            maxLength="2"
+                            size="6"
+                            placeholder="sec"
+                            onChange={() => onTimeChange()}
+                        />
+                        <button id="submit" onClick={() => onSubmit()}>
+                            submit
+                        </button>
+                    </div>
+                    <input
+                        id="result"
+                        type="text"
+                        placeholder="result"
+                        readOnly
+                        style={{ width: '100%' }}
+                        onClick={() => copyResultToClipboard()}
+                    />
                 </div>
             </header>
-			<img id="thumbnail" alt=""></img>
-			<button id="share" onClick={() => share()}>share this page</button>
+            <img id="thumbnail" alt="" onClick={() => {openVideo()}}></img>
+            <button id="share" onClick={() => share()}>
+                share this page
+            </button>
         </div>
     );
 }

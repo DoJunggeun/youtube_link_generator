@@ -1,88 +1,157 @@
 .App {
-  text-align: center;
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* justify-content: center; */
+    text-align: center;
+    background-color: #282c34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* justify-content: center; */
 }
 
 .App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
+    animation: App-logo-spin infinite 20s linear;
+    height: 40vmin;
 }
 
 .main {
-	position:relative;
-	width:90%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+    position: relative;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .inputs {
-	position:relative;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  margin: 18px 0px 18px 0px;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 18px 0px 18px 0px;
 }
 
 #title {
-	margin-bottom:20px
+    margin-bottom: 5vh;
 }
 
 #submit {
-	position:absolute;
-	right:0;
-	height:1.4rem;
+    position: absolute;
+    right: 0;
+    height: 1.4rem;
+}
+
+#thumbnail, #result {
+    cursor: pointer;
 }
 
 #share {
-	height:1.4rem;
+    height: 1.4rem;
 }
 
 input {
-	text-align:center;
-	height:1.4rem;
-	font-size:1rem;
+    text-align: center;
+    height: 1.4rem;
+    font-size: 1rem;
 }
 
 img {
-	max-width:600px;
-	width:90vw;
-	margin:12px;
+    max-width: 600px;
+    width: 90vw;
+    margin: 12px;
 }
 
 .width100 {
-	width:100%;
+    width: 100%;
 }
 
 .App-header {
-	top:0px;
-  max-width:600px;
-  background-color: #282c34;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 1vmin);
-  color: white;
-  margin-top:5vh;
+    top: 0px;
+    max-width: 600px;
+    background-color: #282c34;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 1vmin);
+    color: white;
+    margin-top: 2vh;
 }
 
 .App-link {
-  color: #61dafb;
+    color: #61dafb;
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.p-tooltip {
+    /* Used to position the arrow */
+    position: relative;
+}
+.input-tooltip {
+	bottom: 30px;
+}
+.submit-tooltip {
+	/* bottom: 30px; */
+}
+
+/* Show the arrow and content when hovering the trigger element */
+/* .p-tooltip:hover .p-tooltip-arrow,
+.p-tooltip:hover .p-tooltip-content {
+    opacity: 1;
+}
+ */
+.p-tooltip-arrow {
+    /* Invisible by default */
+    opacity: 0;
+
+    /* Border */
+    border: 8px solid transparent;
+    border-top-color: #cc413e;
+
+    /* Position */
+    bottom: 100%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, 8px);
+
+    /* Zero size */
+    height: 0;
+    width: 0;
+
+    /* Displayed on top of other element */
+    z-index: 10;
+}
+
+.p-tooltip-content {
+    /* Invisible by default */
+    opacity: 0;
+
+    /* Background color, must be the same as the border color of arrow */
+    background-color: #cc413e;
+    border-radius: 2px;
+
+    /* Position */
+    bottom: 100%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, -8px);
+
+    /* Displayed on top of other element */
+    z-index: 10;
+	
+	/* 정렬 및 크기 */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
+    height: 28px;
 }
