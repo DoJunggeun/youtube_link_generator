@@ -30,6 +30,18 @@
     justify-content: center;
     margin: 18px 0px 18px 0px;
 }
+#videoInfo {
+	color:white;
+	width:90%;
+	max-width:600px;
+	margin: 1vh;
+	display:flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    text-align: start;
+
+}
 
 #title {
     margin-bottom: 5vh;
@@ -47,6 +59,7 @@
 
 #share {
     height: 1.4rem;
+	margin-top: 3vh
 }
 
 input {
@@ -58,7 +71,6 @@ input {
 img {
     max-width: 600px;
     width: 90vw;
-    margin: 12px;
 }
 
 .width100 {
@@ -76,6 +88,7 @@ img {
     font-size: calc(10px + 1vmin);
     color: white;
     margin-top: 2vh;
+	margin-bottom: 1vh
 }
 
 .App-link {

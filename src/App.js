@@ -23,13 +23,15 @@ function App() {
         let inputTooltips = document.querySelectorAll('.input-tooltip');
         // inputURL이 유튜브 링크 맞으면 썸네일 가져오기
         if (inputURL == '') {
+			hideThumbnail();
+			hideInfo();
             inputTooltips.forEach((item) => (item.style.opacity = 0));
         } else {
             let data = isYoutubeURL(inputURL);
             if (data) {
                 inputTooltips.forEach((item) => (item.style.opacity = 0));
                 let videoCode = getVideoCode(data.url, data.urltype);
-                showThumbnail(videoCode);
+				showData(videoCode);
             } else if (!data) {
                 inputTooltips.forEach((item) => (item.style.opacity = 1));
             }
@@ -77,7 +79,6 @@ function App() {
         let resultURL = makeResult(data, min.value, sec.value);
         copyToClipboard(resultURL);
         showResult(resultURL, videoCode);
-		showData(videoCode);
 		let submitTooltips = document.querySelectorAll('.submit-tooltip');
 		submitTooltips.forEach((item) => (item.style.opacity = 1));
     }
@@ -117,23 +118,47 @@ function App() {
     }
 
     function showData(videoCode) {
-        fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet&id='+videoCode+'&key='+process.env.REACT_APP_YOUTUBE_API_KEY)
+		let data = fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet&id='+videoCode+'&key='+process.env.REACT_APP_YOUTUBE_API_KEY)
         	.then( (res) => res.json() )
-        	.then( (json) => console.log(JSON.stringify(json)) )
+        	.then( (json) => {
+				  let info = JSON.parse(JSON.stringify(json)).items[0] // description, channelId, localized.title, localized.description, tags, thumbnails, etc
+				  if (info == undefined) {
+					  document.querySelector('#videoInfo').innerText = 'Check your URL'
+					  return
+				  } else {
+					  info = info.snippet
+				  }
+				  let title = info.title;
+				  let channel = info.channelTitle;
+				  let thumbnails = info.thumbnails;
+				  let thumbnailURL = '';
+				  let tempThumbnailWidth = 0
+				  for (let thumbnail of Object.keys(thumbnails)) {
+					  if (thumbnails[thumbnail].width > tempThumbnailWidth) {
+						  tempThumbnailWidth = thumbnails[thumbnail].width;
+						  thumbnailURL = thumbnails[thumbnail].url;
+					  }
+				  }
+				  showThumbnail(thumbnailURL);
+				  let infoArea = document.querySelector('#videoInfo')
+				  infoArea.innerText = '['+channel+']' + ' ' + title;
+				  return ;
+				 })
     }
 	
+	function hideInfo() {
+		let infoArea = document.querySelector('#videoInfo')
+		infoArea.innerText = '';
+	}
 	
-	
-    function showThumbnail(videoCode) {
-        let image = document.getElementById('thumbnail');
-        let thumbnailURL = 'https://i.ytimg.com/vi/' + videoCode + '/maxresdefault.jpg';
+    function showThumbnail(thumbnailURL) {
+		let image = document.getElementById('thumbnail');
         image.src = thumbnailURL;
-        if (image.naturalHeight == 90)
-            image.src = 'https://i.ytimg.com/vi/' + videoCode + '/hddefault.jpg';
-        if (image.naturalHeight == 90)
-            image.src = 'https://i.ytimg.com/vi/' + videoCode + '/sddefault.jpg';
-        if (image.naturalHeight == 90) image.src = 'https://i.ytimg.com/vi/' + videoCode + '/0.jpg';
     }
+	
+	function hideThumbnail() {
+		document.getElementById('thumbnail').src = '';
+	}
     // https://i.ytimg.com/vi/M03hNLFsRKY/maxresdefault.jpg (maxresdefault, sddefault, 0)
     // https://www.youtube.com/watch?v=8Wtvn2LBQHM&feature=youtu.be
     // https://youtu.be/8Wtvn2LBQHM
@@ -181,6 +206,8 @@ function App() {
             }
         }
         if (inputURL.includes('youtube.com')) {
+			if (!inputURL.includes('?v=')) return false;
+			
             let videoCodeStart = inputURL.indexOf('?v=') + 3;
             let videoCodeEnd = videoCodeStart + 11;
             if (inputURL.slice(videoCodeStart, videoCodeEnd).length < 11) {
@@ -285,6 +312,7 @@ function App() {
                     />
                 </div>
             </header>
+			<div id="videoInfo"></div>
             <img id="thumbnail" alt="" onClick={() => {openVideo()}}></img>
             <button id="share" onClick={() => share()}>
                 share this page
