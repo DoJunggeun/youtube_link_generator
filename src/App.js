@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import key from './api/youtubeapi.js';
 
 function App() {
     // const [loaded, setLoaded] = useState(false);
@@ -118,7 +117,7 @@ function App() {
     }
 
     function showData(videoCode) {
-        fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet&id='+videoCode+'&key='+key)
+        fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet&id='+videoCode+'&key='+process.env.REACT_APP_YOUTUBE_API_KEY)
         	.then( (res) => res.json() )
         	.then( (json) => console.log(JSON.stringify(json)) )
     }
