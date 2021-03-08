@@ -13,7 +13,7 @@ PC로 Youtube를 보다가 링크를 공유할 때, 영상에 우클릭하면 �
 	- ex. 입력이 숫자가 아닌 경우, 초가 60 이상인 경우, etc.
 
 ## What I learn (Practiced)
-- Almost vanilla JS
+- Mostly vanilla JS
 - Youtube APi basics
 - React .env setting
 - goorm IDE
