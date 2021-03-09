@@ -6,6 +6,7 @@ PC로 Youtube를 보다가 링크를 공유할 때, 영상에 우클릭하면 �
 ## Features
 - URL 기본 형식 검증
 	- youtube.com, youtu.be
+
 - 이후 Youtube api를 이용하여 
 	- 입력된 URL의 Video Code 검증
 	- Valid URL이면 채널명, 제목, 썸네일 정보 노출
